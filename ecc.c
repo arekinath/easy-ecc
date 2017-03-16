@@ -7,7 +7,7 @@
 
 typedef unsigned int uint;
 
-#if defined(__SIZEOF_INT128__) || ((__clang_major__ * 100 + __clang_minor__) >= 302)
+#if defined(__SIZEOF_INT128__) || ((__clang_major__ * 100 + __clang_minor__) >= 302 && !defined(__i386))
     #define SUPPORTS_INT128 1
 #else
     #define SUPPORTS_INT128 0
@@ -1043,10 +1043,15 @@ static void mod_sqrt(uint64_t a[NUM_ECC_DIGITS])
     vli_set(a, l_result);
 }
 
-static void ecc_point_decompress(EccPoint *p_point, const uint8_t p_compressed[ECC_BYTES+1])
+static void ecc_point_decompress(EccPoint *p_point, const uint8_t p_compressed[ECC_BYTES*2+1])
 {
     uint64_t _3[NUM_ECC_DIGITS] = {3}; /* -a = 3 */
     ecc_bytes2native(p_point->x, p_compressed+1);
+
+    if (p_compressed[0] == 0x04) {
+        ecc_bytes2native(p_point->y, p_compressed+1+ECC_BYTES);
+        return;
+    }
     
     vli_modSquare_fast(p_point->y, p_point->x); /* y = x^2 */
     vli_modSub(p_point->y, p_point->y, _3, curve_p); /* y = x^2 - 3 */
@@ -1235,7 +1240,7 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
     return 1;
 }
 
-int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES+1], const uint8_t p_hash[ECC_BYTES], const uint8_t p_signature[ECC_BYTES*2])
+int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES*2+1], const uint8_t p_hash[ECC_BYTES], const uint8_t p_signature[ECC_BYTES*2])
 {
     uint64_t u1[NUM_ECC_DIGITS], u2[NUM_ECC_DIGITS];
     uint64_t z[NUM_ECC_DIGITS];

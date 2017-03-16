@@ -79,7 +79,7 @@ Inputs:
 
 Returns 1 if the signature is valid, 0 if it is invalid.
 */
-int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES+1], const uint8_t p_hash[ECC_BYTES], const uint8_t p_signature[ECC_BYTES*2]);
+int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES*2+1], const uint8_t p_hash[ECC_BYTES], const uint8_t p_signature[ECC_BYTES*2]);
 
 #ifdef __cplusplus
 } /* end of extern "C" */
